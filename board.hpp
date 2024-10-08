@@ -22,6 +22,8 @@ class q_tile final
 {
 public:
     inline bool has_collapsed() const { return _superposition & (1 << N); }
+    inline bool has_zero_entropy() const { return !(_superposition & INIT_STATE); }
+
     inline std::bitset<N + 1> get_superposition() const { return std::bitset<N + 1>(_superposition); }
     inline int get_value() const { return bit::mask.at(_superposition); }
 
@@ -47,12 +49,13 @@ public:
     inline const q_tile& get_tile(const int index) const { return _grid[index]; }
 
     std::string show() const;
-    void collapse(const int idx, const int value);
+    bool collapse(const int idx, const int value);
 
 private:
-    void propagate_col(const int j, const int value);
-    void propagate_row(const int i, const int value);
-    void propagate_box(const int i, const int j, const int value);
+    bool propagate(const int idx, const int value);
+    bool propagate_col(const int i, const int j, const int value);
+    bool propagate_row(const int i, const int j, const int value);
+    bool propagate_box(const int i, const int j, const int value);
 
     std::array<q_tile, N * N> _grid;
 };

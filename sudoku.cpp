@@ -4,6 +4,7 @@
 #include <optional>
 #include <stack>
 #include <string>
+#include <algorithm>
 
 #include "random.hpp"
 
@@ -73,6 +74,12 @@ std::optional<std::vector<int>> get_candidates(const q_board& board)
     return candidates;
 }
 
+bool is_solution(const q_board& board)
+{
+    return std::all_of(board.get_grid().cbegin(), board.get_grid().cend(),
+        [](const q_tile& t){ return t.has_collapsed(); });
+}
+
 bool solve(q_board &board)
 {
     std::stack<q_board> stk;
@@ -98,10 +105,17 @@ bool solve(q_board &board)
         const int chosen_idx = randomns::sample(candidates)[0];
         std::vector<int> possibilities = curr.get_tile(chosen_idx).get_possibilities();
 
-        randomns::shuffle(possibilities);
+        randomns::shuffle(possibilities);   // Won't be needed when parallelized
         for (int chosen_val : possibilities) {
             stk.emplace(curr);  // Creates a copy directly at the top of the stack
-            stk.top().collapse(chosen_idx, chosen_val);
+
+            if (!stk.top().collapse(chosen_idx, chosen_val)) {
+                stk.pop();
+
+            } else if (is_solution(stk.top())) {
+                board = stk.top();
+                return true;
+            }
         }
     }
 
