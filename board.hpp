@@ -8,7 +8,7 @@
 
 #define N 9
 #define BOX 3
-#define INIT_STATE 0b0111111111
+#define INIT_STATE 0b01'1111'1111
 
 
 inline std::array<int, 2> array2grid(const int index) { return {(index / N), (index % N)}; }

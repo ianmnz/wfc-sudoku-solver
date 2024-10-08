@@ -11,6 +11,10 @@ namespace randomns
 inline std::random_device rd;
 inline std::mt19937 g(rd());
 
+// inline std::seed_seq seed{2};
+// inline std::mt19937 g(seed);
+
+
 std::vector<int> sample(const std::vector<int>& array, const int nb_elem = 1)
 {
     std::vector<int> chosen;

@@ -75,10 +75,17 @@ bool q_board::collapse(const int index, const int value)
 
 bool q_board::propagate(const int idx, const int value)
 {
-    _grid[idx].eliminate(value);
+    q_tile& tile = _grid[idx];
+    tile.eliminate(value);
 
-    if (_grid[idx].has_zero_entropy()) {
+    // Check if should abort collapsing
+    if (tile.has_zero_entropy()) {
         return false;
+    }
+
+    // Collapse cascade
+    if (tile.get_entropy() == 1) {
+        return collapse(idx, tile.get_value());
     }
     return true;
 }
@@ -89,11 +96,11 @@ bool q_board::propagate_col(const int i, const int j, const int value)
         if (r == i) {
             continue;
         }
+
         if (!propagate(grid2array(r, j), value)) {
             return false;
         }
     }
-
     return true;
 }
 
@@ -103,11 +110,11 @@ bool q_board::propagate_row(const int i, const int j, const int value)
         if (c == j) {
             continue;
         }
+
         if (!propagate(grid2array(i, c), value)) {
             return false;
         }
     }
-
     return true;
 }
 
@@ -125,12 +132,12 @@ bool q_board::propagate_box(const int i, const int j, const int value)
             if (r == i && c == j) {
                 continue;
             }
+
             if (!propagate(grid2array(r, c), value)) {
                 return false;
             }
         }
     }
-
     return true;
 }
 
