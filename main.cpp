@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ctype.h>
 #include <string>
 #include <fstream>
 #include <vector>
@@ -19,30 +20,36 @@ std::vector<std::string> parse(const std::string& filename)
             grids.push_back(grid);
         }
     } else {
-        std::cerr << "File " << filename << " not found." << std::endl;
+        std::cerr << "File '" << filename << "' not found." << std::endl;
     }
 
     return grids;
 }
 
 
-int main()
+int main(int argc, char* argv[])
 {
-    const auto& grids = parse("sudoku10k.txt");
+    std::string filename {"sudoku10k.txt"};
+    int count = 0, max_count = 3;
+    bool should_print_boards {true};
+
+    if (argc > 1) filename = argv[1];
+    if (argc > 2 && isdigit(argv[2][0])) max_count = std::stoi(argv[2]);
+    if (argc > 3) should_print_boards = false;
+
+    const auto& grids = parse(filename);
 
     std::chrono::high_resolution_clock::time_point begin = std::chrono::high_resolution_clock::now();
-
-    int count = 0;
 
     for (const auto& grid : grids) {
         sudoku::q_board b(grid);
         if (sudoku::solve(b)) {
-            sudoku::print_side_by_side(grid, b.show());
+            if (should_print_boards) sudoku::print_side_by_side(grid, b.show());
 
         } else {
             std::cout << "No solution found for " << grid << std::endl;
         }
-        if (++count >= 1) break;
+        if (++count >= max_count) break;
     }
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
