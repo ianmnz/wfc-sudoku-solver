@@ -48,7 +48,7 @@ std::string q_board::show() const
     std::stringstream ss;
     for (const auto tile : _grid) {
         if (tile.has_collapsed()) {
-            ss << tile.get_value();
+            ss << tile.get_digit();
 
         } else {
             ss << '.';
@@ -57,15 +57,15 @@ std::string q_board::show() const
     return ss.str();
 }
 
-bool q_board::collapse(const int index, const int value)
+bool q_board::collapse(const int index, const int digit)
 {
     const auto& [i, j] = array2grid(index);
 
-    _grid[index].fill(value);
+    _grid[index].fill(digit);
 
-    if (!propagate_col(i, j, value)
-        || !propagate_row(i, j, value)
-        || !propagate_box(i, j, value))
+    if (!propagate_col(i, j, digit)
+        || !propagate_row(i, j, digit)
+        || !propagate_box(i, j, digit))
     {
         return false;
     }
@@ -73,10 +73,10 @@ bool q_board::collapse(const int index, const int value)
     return true;
 }
 
-bool q_board::propagate(const int idx, const int value)
+bool q_board::propagate(const int idx, const int digit)
 {
     q_tile& tile = _grid[idx];
-    tile.eliminate(value);
+    tile.eliminate(digit);
 
     // Check if should abort collapsing
     if (tile.has_zero_entropy()) {
@@ -85,40 +85,40 @@ bool q_board::propagate(const int idx, const int value)
 
     // Collapse cascade
     if (tile.get_entropy() == 1) {
-        return collapse(idx, tile.get_value());
+        return collapse(idx, tile.get_digit());
     }
     return true;
 }
 
-bool q_board::propagate_col(const int i, const int j, const int value)
+bool q_board::propagate_col(const int i, const int j, const int digit)
 {
     for (int r = 0; r < N; ++r) {
         if (r == i) {
             continue;
         }
 
-        if (!propagate(grid2array(r, j), value)) {
+        if (!propagate(grid2array(r, j), digit)) {
             return false;
         }
     }
     return true;
 }
 
-bool q_board::propagate_row(const int i, const int j, const int value)
+bool q_board::propagate_row(const int i, const int j, const int digit)
 {
     for (int c = 0; c < N; ++c) {
         if (c == j) {
             continue;
         }
 
-        if (!propagate(grid2array(i, c), value)) {
+        if (!propagate(grid2array(i, c), digit)) {
             return false;
         }
     }
     return true;
 }
 
-bool q_board::propagate_box(const int i, const int j, const int value)
+bool q_board::propagate_box(const int i, const int j, const int digit)
 {
     const int rr = i - (i % BOX);   // = (int)(i / BOX) * BOX
     const int cc = j - (j % BOX);   // = (int)(j / BOX) * BOX
@@ -133,7 +133,7 @@ bool q_board::propagate_box(const int i, const int j, const int value)
                 continue;
             }
 
-            if (!propagate(grid2array(r, c), value)) {
+            if (!propagate(grid2array(r, c), digit)) {
                 return false;
             }
         }

@@ -25,13 +25,13 @@ public:
     inline bool has_zero_entropy() const { return !(_superposition & INIT_STATE); }
 
     inline std::bitset<N + 1> get_superposition() const { return std::bitset<N + 1>(_superposition); }
-    inline int get_value() const { return bit::mask.at(_superposition); }
+    inline int get_digit() const { return bit::mask.at(_superposition); }
 
     int get_entropy() const;
     const std::vector<int> get_possibilities() const;
 
-    inline void fill(const int value) { _superposition = bit::set(1 << N, value - 1); }
-    inline void eliminate(const int value) { _superposition = bit::clear(_superposition, value - 1); }
+    inline void fill(const int digit) { _superposition = bit::set(1 << N, digit - 1); }
+    inline void eliminate(const int digit) { _superposition = bit::clear(_superposition, digit - 1); }
     inline void clear() { _superposition = INIT_STATE; }
 
 private:
@@ -49,13 +49,13 @@ public:
     inline const q_tile& get_tile(const int index) const { return _grid[index]; }
 
     std::string show() const;
-    bool collapse(const int idx, const int value);
+    bool collapse(const int idx, const int digit);
 
 private:
-    bool propagate(const int idx, const int value);
-    bool propagate_col(const int i, const int j, const int value);
-    bool propagate_row(const int i, const int j, const int value);
-    bool propagate_box(const int i, const int j, const int value);
+    bool propagate(const int idx, const int digit);
+    bool propagate_col(const int i, const int j, const int digit);
+    bool propagate_row(const int i, const int j, const int digit);
+    bool propagate_box(const int i, const int j, const int digit);
 
     std::array<q_tile, N * N> _grid;
 };
