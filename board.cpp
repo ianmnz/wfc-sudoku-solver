@@ -75,6 +75,13 @@ bool q_board::collapse(const int index, const int digit)
         return false;
     }
 
+    if (!infer_col(i, j)
+        || !infer_row(i, j)
+        || !infer_box(i, j))
+    {
+        return false;
+    }
+
     return true;
 }
 
@@ -92,6 +99,43 @@ bool q_board::propagate(const int idx, const int digit)
     if (tile.get_entropy() == 1) {
         return collapse(idx, tile.get_digit());
     }
+    return true;
+}
+
+bool q_board::infer(const std::vector<int>& arr)
+{
+    for (int d = 1; d <= N; ++d) {
+        int inferred_idx = -1;
+        bool is_inferred_idx_uniq = false;
+
+        for (const int idx : arr) {
+            const q_tile& tile = _grid[idx];
+
+            if (tile.get_superposition()[d - 1]) {
+                if (is_inferred_idx_uniq) {
+                    is_inferred_idx_uniq = false;
+                    break;
+
+                } else {
+                    is_inferred_idx_uniq = true;
+                    inferred_idx = idx;
+                }
+            }
+        }
+
+        if (!is_inferred_idx_uniq) {
+            continue;
+        }
+
+        if (_grid[inferred_idx].has_collapsed()) {
+            continue;
+        }
+
+        if (!collapse(inferred_idx, d)) {
+            return false;
+        }
+    }
+
     return true;
 }
 
@@ -123,6 +167,21 @@ bool q_board::propagate_box(const int i, const int j, const int digit)
         }
     }
     return true;
+}
+
+bool q_board::infer_col(const int i, const int j)
+{
+    return infer(get_cols(i, j));
+}
+
+bool q_board::infer_row(const int i, const int j)
+{
+    return infer(get_rows(i, j));
+}
+
+bool q_board::infer_box(const int i, const int j)
+{
+    return infer(get_boxes(i, j));
 }
 
 std::vector<int> q_board::get_cols(const int i, const int j) const

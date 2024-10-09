@@ -57,6 +57,11 @@ private:
     bool propagate_row(const int i, const int j, const int digit);
     bool propagate_box(const int i, const int j, const int digit);
 
+    bool infer(const std::vector<int>& arr);
+    bool infer_col(const int i, const int j);
+    bool infer_row(const int i, const int j);
+    bool infer_box(const int i, const int j);
+
     std::vector<int> get_cols(const int i, const int j) const;
     std::vector<int> get_rows(const int i, const int j) const;
     std::vector<int> get_boxes(const int i, const int j) const;
