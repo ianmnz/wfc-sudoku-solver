@@ -97,12 +97,8 @@ bool q_board::propagate(const int idx, const int digit)
 
 bool q_board::propagate_col(const int i, const int j, const int digit)
 {
-    for (int r = 0; r < N; ++r) {
-        if (r == i) {
-            continue;
-        }
-
-        if (!propagate(grid2array(r, j), digit)) {
+    for (const int idx : get_cols(i, j)) {
+        if (!propagate(idx, digit)) {
             return false;
         }
     }
@@ -111,12 +107,8 @@ bool q_board::propagate_col(const int i, const int j, const int digit)
 
 bool q_board::propagate_row(const int i, const int j, const int digit)
 {
-    for (int c = 0; c < N; ++c) {
-        if (c == j) {
-            continue;
-        }
-
-        if (!propagate(grid2array(i, c), digit)) {
+    for (const int idx : get_rows(i, j)) {
+        if (!propagate(idx, digit)) {
             return false;
         }
     }
@@ -125,6 +117,49 @@ bool q_board::propagate_row(const int i, const int j, const int digit)
 
 bool q_board::propagate_box(const int i, const int j, const int digit)
 {
+    for (const int idx : get_boxes(i, j)) {
+        if (!propagate(idx, digit)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+std::vector<int> q_board::get_cols(const int i, const int j) const
+{
+    std::vector<int> columns;
+    columns.reserve(N - 1);
+
+    for (int r = 0; r < N; ++r) {
+        if (r == i) {
+            continue;
+        }
+        columns.push_back(grid2array(r, j));
+    }
+
+    return columns;
+}
+
+std::vector<int> q_board::get_rows(const int i, const int j) const
+{
+    std::vector<int> rows;
+    rows.reserve(N - 1);
+
+    for (int c = 0; c < N; ++c) {
+        if (c == j) {
+            continue;
+        }
+        rows.push_back(grid2array(i, c));
+    }
+
+    return rows;
+}
+
+std::vector<int> q_board::get_boxes(const int i, const int j) const
+{
+    std::vector<int> boxes;
+    boxes.reserve(N - 1);
+
     const int rr = i - (i % BOX);   // = (int)(i / BOX) * BOX
     const int cc = j - (j % BOX);   // = (int)(j / BOX) * BOX
 
@@ -138,12 +173,11 @@ bool q_board::propagate_box(const int i, const int j, const int digit)
                 continue;
             }
 
-            if (!propagate(grid2array(r, c), digit)) {
-                return false;
-            }
+            boxes.push_back(grid2array(r, c));
         }
     }
-    return true;
+
+    return boxes;
 }
 
 } // namespace sudoku

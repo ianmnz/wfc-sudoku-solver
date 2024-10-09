@@ -57,6 +57,10 @@ private:
     bool propagate_row(const int i, const int j, const int digit);
     bool propagate_box(const int i, const int j, const int digit);
 
+    std::vector<int> get_cols(const int i, const int j) const;
+    std::vector<int> get_rows(const int i, const int j) const;
+    std::vector<int> get_boxes(const int i, const int j) const;
+
     std::array<q_tile, N * N> _grid;
 };
 
