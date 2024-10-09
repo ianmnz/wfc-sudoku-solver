@@ -60,8 +60,13 @@ std::string q_board::show() const
 bool q_board::collapse(const int index, const int digit)
 {
     const auto& [i, j] = array2grid(index);
+    q_tile& tile = _grid[index];
 
-    _grid[index].fill(digit);
+    if (tile.has_collapsed()) {
+        return (tile.get_digit() == digit);
+    }
+
+    tile.fill(digit);
 
     if (!propagate_col(i, j, digit)
         || !propagate_row(i, j, digit)
