@@ -141,7 +141,7 @@ bool q_board::infer(const std::vector<int>& arr)
 
 bool q_board::propagate_col(const int i, const int j, const int digit)
 {
-    for (const int idx : get_cols(i, j)) {
+    for (const int idx : get_col_peers(i, j)) {
         if (!propagate(idx, digit)) {
             return false;
         }
@@ -151,7 +151,7 @@ bool q_board::propagate_col(const int i, const int j, const int digit)
 
 bool q_board::propagate_row(const int i, const int j, const int digit)
 {
-    for (const int idx : get_rows(i, j)) {
+    for (const int idx : get_row_peers(i, j)) {
         if (!propagate(idx, digit)) {
             return false;
         }
@@ -161,7 +161,7 @@ bool q_board::propagate_row(const int i, const int j, const int digit)
 
 bool q_board::propagate_box(const int i, const int j, const int digit)
 {
-    for (const int idx : get_boxes(i, j)) {
+    for (const int idx : get_box_peers(i, j)) {
         if (!propagate(idx, digit)) {
             return false;
         }
@@ -171,20 +171,20 @@ bool q_board::propagate_box(const int i, const int j, const int digit)
 
 bool q_board::infer_col(const int i, const int j)
 {
-    return infer(get_cols(i, j));
+    return infer(get_col_peers(i, j));
 }
 
 bool q_board::infer_row(const int i, const int j)
 {
-    return infer(get_rows(i, j));
+    return infer(get_row_peers(i, j));
 }
 
 bool q_board::infer_box(const int i, const int j)
 {
-    return infer(get_boxes(i, j));
+    return infer(get_box_peers(i, j));
 }
 
-std::vector<int> q_board::get_cols(const int i, const int j) const
+std::vector<int> q_board::get_col_peers(const int i, const int j) const
 {
     std::vector<int> columns;
     columns.reserve(N - 1);
@@ -199,7 +199,7 @@ std::vector<int> q_board::get_cols(const int i, const int j) const
     return columns;
 }
 
-std::vector<int> q_board::get_rows(const int i, const int j) const
+std::vector<int> q_board::get_row_peers(const int i, const int j) const
 {
     std::vector<int> rows;
     rows.reserve(N - 1);
@@ -214,7 +214,7 @@ std::vector<int> q_board::get_rows(const int i, const int j) const
     return rows;
 }
 
-std::vector<int> q_board::get_boxes(const int i, const int j) const
+std::vector<int> q_board::get_box_peers(const int i, const int j) const
 {
     std::vector<int> boxes;
     boxes.reserve(N - 1);
