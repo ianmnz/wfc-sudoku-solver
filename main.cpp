@@ -29,7 +29,7 @@ std::vector<std::string> parse(const std::string& filename)
 
 int main(int argc, char* argv[])
 {
-    std::string filename {"sudoku10k.txt"};
+    std::string filename {"data/sudoku10k.txt"};
     int count = 0, max_count = 3;
     bool should_print_boards {true};
 
