@@ -57,14 +57,14 @@ private:
     bool propagate_row(const int i, const int j, const int digit);
     bool propagate_box(const int i, const int j, const int digit);
 
-    bool infer(const std::vector<int>& arr);
+    bool infer(const std::array<int, N - 1>& arr);
     bool infer_col(const int i, const int j);
     bool infer_row(const int i, const int j);
     bool infer_box(const int i, const int j);
 
-    std::vector<int> get_col_peers(const int i, const int j) const;
-    std::vector<int> get_row_peers(const int i, const int j) const;
-    std::vector<int> get_box_peers(const int i, const int j) const;
+    std::array<int, N - 1> get_col_peers(const int i, const int j) const;
+    std::array<int, N - 1> get_row_peers(const int i, const int j) const;
+    std::array<int, N - 1> get_box_peers(const int i, const int j) const;
 
     std::array<q_tile, N * N> _grid;
 };

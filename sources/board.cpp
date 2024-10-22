@@ -102,7 +102,7 @@ bool q_board::propagate(const int idx, const int digit)
     return true;
 }
 
-bool q_board::infer(const std::vector<int>& arr)
+bool q_board::infer(const std::array<int, N - 1>& arr)
 {
     for (int d = 1; d <= N; ++d) {
         int inferred_idx = -1;
@@ -184,44 +184,44 @@ bool q_board::infer_box(const int i, const int j)
     return infer(get_box_peers(i, j));
 }
 
-std::vector<int> q_board::get_col_peers(const int i, const int j) const
+std::array<int, N - 1> q_board::get_col_peers(const int i, const int j) const
 {
-    std::vector<int> columns;
-    columns.reserve(N - 1);
+    std::array<int, N - 1> columns;
 
+    int idx = 0;
     for (int r = 0; r < N; ++r) {
         if (r == i) {
             continue;
         }
-        columns.push_back(grid2array(r, j));
+        columns[idx++] = grid2array(r, j);
     }
 
     return columns;
 }
 
-std::vector<int> q_board::get_row_peers(const int i, const int j) const
+std::array<int, N - 1> q_board::get_row_peers(const int i, const int j) const
 {
-    std::vector<int> rows;
-    rows.reserve(N - 1);
+    std::array<int, N - 1> rows;
 
+    int idx = 0;
     for (int c = 0; c < N; ++c) {
         if (c == j) {
             continue;
         }
-        rows.push_back(grid2array(i, c));
+        rows[idx++] = grid2array(i, c);
     }
 
     return rows;
 }
 
-std::vector<int> q_board::get_box_peers(const int i, const int j) const
+std::array<int, N - 1> q_board::get_box_peers(const int i, const int j) const
 {
-    std::vector<int> boxes;
-    boxes.reserve(N - 1);
+    std::array<int, N - 1> boxes;
 
     const int rr = i - (i % BOX);   // = (int)(i / BOX) * BOX
     const int cc = j - (j % BOX);   // = (int)(j / BOX) * BOX
 
+    int idx = 0;
     for (int dr = 0; dr < BOX; ++dr) {
         const int r = rr + dr;
 
@@ -232,7 +232,7 @@ std::vector<int> q_board::get_box_peers(const int i, const int j) const
                 continue;
             }
 
-            boxes.push_back(grid2array(r, c));
+            boxes[idx++] = grid2array(r, c);
         }
     }
 
