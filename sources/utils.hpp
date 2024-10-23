@@ -27,7 +27,7 @@ using Task = std::function<void ()>;
 class thread_pool
 {
 public:
-    thread_pool(const int nb_threads = std::thread::hardware_concurrency());
+    thread_pool(const int nb_threads);
     ~thread_pool();
     void enqueue(Task task);
 

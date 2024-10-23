@@ -9,7 +9,37 @@
 #include "utils.hpp"
 
 
-std::vector<std::string> parse(const std::string& filename)
+bool is_numeric(const std::string_view sv)
+{
+    return (!sv.empty() &&
+            std::find_if(sv.begin(), sv.end(), [](unsigned char c){ return !std::isdigit(c); }) == sv.end());
+}
+
+void parse_cmdline(const int argc, const char** argv, std::string& filename, int& nb_threads, bool& print_boards)
+{
+    // Default values
+    filename = "data/sudoku10k.txt";
+    nb_threads = 4;
+    print_boards = true;
+
+    switch (argc)
+    {
+    case 4:
+        if (std::string(argv[3]) == "0"){
+            print_boards = false;
+        }
+    case 3:
+        if (is_numeric(argv[2])) {
+            nb_threads = std::min(std::stoi(argv[2]), (int) std::thread::hardware_concurrency());
+        }
+    case 2:
+        filename = argv[1];
+    default:
+        break;
+    }
+}
+
+std::vector<std::string> parse_grids(const std::string& filename)
 {
     std::vector<std::string> grids;
     std::ifstream infile(filename);
@@ -28,28 +58,29 @@ std::vector<std::string> parse(const std::string& filename)
 }
 
 
-int main(int argc, char* argv[])
+int main(int argc, const char* argv[])
 {
-    std::string filename {"data/sudoku10k.txt"};
-    int count = 0, max_count = 3;
-    bool should_print_boards {true};
+    std::string filename;
+    int nb_threads;
+    bool print_boards;
     std::mutex cout_mtx;
 
-    if (argc > 1) filename = argv[1];
-    if (argc > 2 && isdigit(argv[2][0])) max_count = std::stoi(argv[2]);
-    if (argc > 3) should_print_boards = false;
+    parse_cmdline(argc, argv, filename, nb_threads, print_boards);
+    const auto& grids = parse_grids(filename);
+    nb_threads = std::min(nb_threads, (int) grids.size());
+    print_boards &= (grids.size() <= 10);    // Arbitrary magic number to avoid printing too much games
 
-    const auto& grids = parse(filename);
-
+    std::cout << "Sudoku solver: " << grids.size() << " puzzles to solve on "  << nb_threads << " threads" << std::endl;
     std::chrono::high_resolution_clock::time_point begin = std::chrono::high_resolution_clock::now();
+
     {
-        utils::thread_pool pool(4);
+        utils::thread_pool pool(nb_threads);
 
         for (const auto& grid : grids) {
-            pool.enqueue([grid, should_print_boards, &cout_mtx]{
+            pool.enqueue([grid, print_boards, &cout_mtx]{
                 sudoku::q_board game(grid);
                 if (sudoku::solve(game)) {
-                    if (should_print_boards) {
+                    if (print_boards) {
                         sudoku::print_side_by_side(grid, game.show(), cout_mtx);
                     }
                 } else {
@@ -57,12 +88,10 @@ int main(int argc, char* argv[])
                     std::cout << "No solution found for " << grid << std::endl;
                 }
             });
-            if (++count >= max_count) break;
         }
     }
 
     std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-    std::cout << "Solved " << std::min((int)grids.size(), max_count) << " puzzles" << std::endl;
     std::cout << "Elapsed time: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() * 1.e-6 << " s" << std::endl;
 
     return 0;
