@@ -12,8 +12,11 @@
 namespace sudoku
 {
 
-void print_side_by_side(std::string_view init_grid, std::string_view solved_grid)
+void print_side_by_side(std::string_view init_grid, std::string_view solved_grid, std::mutex& mtx)
 {
+    // To avoid data racing when printing the results
+    std::lock_guard<std::mutex> lock(mtx);
+
     static constexpr std::string_view row_separator = " -----+-----+-----";
 
     std::cout << "\n";

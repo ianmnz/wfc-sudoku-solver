@@ -3,6 +3,11 @@
 #include <random>
 #include <vector>
 #include <algorithm>
+#include <thread>
+#include <queue>
+#include <condition_variable>
+#include <mutex>
+#include <functional>
 
 
 namespace utils
@@ -14,20 +19,25 @@ inline std::mt19937 g(rd());
 // inline std::seed_seq seed{2};
 // inline std::mt19937 g(seed);
 
+std::vector<int> sample(const std::vector<int>& array, const int nb_elem = 1);
+void shuffle(std::vector<int>& array);
 
-std::vector<int> sample(const std::vector<int>& array, const int nb_elem = 1)
+using Task = std::function<void ()>;
+
+class thread_pool
 {
-    std::vector<int> chosen;
-    chosen.reserve(nb_elem);
+public:
+    thread_pool(const int nb_threads = std::thread::hardware_concurrency());
+    ~thread_pool();
+    void enqueue(Task task);
 
-    std::sample(array.cbegin(), array.cend(), std::back_inserter(chosen), nb_elem, g);
+private:
+    std::vector<std::thread> _threads;
+    std::queue<Task> _tasks;
+    std::condition_variable _cv;
+    std::mutex _mtx;
 
-    return chosen;
-}
-
-void shuffle(std::vector<int>& array)
-{
-    std::shuffle(array.begin(), array.end(), g);
-}
+    bool _stop_pool = false;
+};
 
 } // namespace utils
