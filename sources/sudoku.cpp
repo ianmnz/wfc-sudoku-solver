@@ -6,7 +6,7 @@
 #include <string>
 #include <algorithm>
 
-#include "random.hpp"
+#include "utils.hpp"
 
 
 namespace sudoku
@@ -102,10 +102,10 @@ bool solve(q_board &board)
             return true;
         }
 
-        const int chosen_idx = randomns::sample(candidates)[0];
+        const int chosen_idx = utils::sample(candidates)[0];
         std::vector<int> possibilities = curr.get_tile(chosen_idx).get_possibilities();
 
-        randomns::shuffle(possibilities);   // Won't be needed when parallelized
+        utils::shuffle(possibilities);   // Won't be needed when parallelized
         for (int chosen_val : possibilities) {
             stk.emplace(curr);  // Creates a copy directly at the top of the stack
 

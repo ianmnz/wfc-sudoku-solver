@@ -5,7 +5,7 @@
 #include <algorithm>
 
 
-namespace randomns
+namespace utils
 {
 
 inline std::random_device rd;
@@ -30,4 +30,4 @@ void shuffle(std::vector<int>& array)
     std::shuffle(array.begin(), array.end(), g);
 }
 
-} // namespace randomns
+} // namespace utils
