@@ -62,10 +62,6 @@ private:
     bool infer_row(const int i, const int j);
     bool infer_box(const int i, const int j);
 
-    std::array<int, N - 1> get_col_peers(const int i, const int j) const;
-    std::array<int, N - 1> get_row_peers(const int i, const int j) const;
-    std::array<int, N - 1> get_box_peers(const int i, const int j) const;
-
     std::array<q_tile, N * N> _grid;
 };
 

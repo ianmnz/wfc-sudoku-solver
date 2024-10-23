@@ -3,6 +3,58 @@
 #include <sstream>
 
 
+std::array<int, N - 1> get_col_peers(const int i, const int j)
+{
+    std::array<int, N - 1> columns;
+
+    int idx = 0;
+    for (int r = 0; r < N; ++r) {
+        if (r == i) {
+            continue;
+        }
+        columns[idx++] = grid2array(r, j);
+    }
+    return columns;
+}
+
+std::array<int, N - 1> get_row_peers(const int i, const int j)
+{
+    std::array<int, N - 1> rows;
+
+    int idx = 0;
+    for (int c = 0; c < N; ++c) {
+        if (c == j) {
+            continue;
+        }
+        rows[idx++] = grid2array(i, c);
+    }
+    return rows;
+}
+
+std::array<int, N - 1> get_box_peers(const int i, const int j)
+{
+    std::array<int, N - 1> boxes;
+
+    const int rr = i - (i % BOX);   // = (int)(i / BOX) * BOX
+    const int cc = j - (j % BOX);   // = (int)(j / BOX) * BOX
+
+    int idx = 0;
+    for (int dr = 0; dr < BOX; ++dr) {
+        const int r = rr + dr;
+
+        for (int dc = 0; dc < BOX; ++dc) {
+            const int c = cc + dc;
+
+            if (r == i && c == j) {
+                continue;
+            }
+            boxes[idx++] = grid2array(r, c);
+        }
+    }
+    return boxes;
+}
+
+
 namespace sudoku
 {
 
@@ -182,61 +234,6 @@ bool q_board::infer_row(const int i, const int j)
 bool q_board::infer_box(const int i, const int j)
 {
     return infer(get_box_peers(i, j));
-}
-
-std::array<int, N - 1> q_board::get_col_peers(const int i, const int j) const
-{
-    std::array<int, N - 1> columns;
-
-    int idx = 0;
-    for (int r = 0; r < N; ++r) {
-        if (r == i) {
-            continue;
-        }
-        columns[idx++] = grid2array(r, j);
-    }
-
-    return columns;
-}
-
-std::array<int, N - 1> q_board::get_row_peers(const int i, const int j) const
-{
-    std::array<int, N - 1> rows;
-
-    int idx = 0;
-    for (int c = 0; c < N; ++c) {
-        if (c == j) {
-            continue;
-        }
-        rows[idx++] = grid2array(i, c);
-    }
-
-    return rows;
-}
-
-std::array<int, N - 1> q_board::get_box_peers(const int i, const int j) const
-{
-    std::array<int, N - 1> boxes;
-
-    const int rr = i - (i % BOX);   // = (int)(i / BOX) * BOX
-    const int cc = j - (j % BOX);   // = (int)(j / BOX) * BOX
-
-    int idx = 0;
-    for (int dr = 0; dr < BOX; ++dr) {
-        const int r = rr + dr;
-
-        for (int dc = 0; dc < BOX; ++dc) {
-            const int c = cc + dc;
-
-            if (r == i && c == j) {
-                continue;
-            }
-
-            boxes[idx++] = grid2array(r, c);
-        }
-    }
-
-    return boxes;
 }
 
 } // namespace sudoku
