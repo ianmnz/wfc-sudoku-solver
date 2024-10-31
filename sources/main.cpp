@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include <string>
 #include <fstream>
+#include <filesystem>
 #include <vector>
 #include <chrono>
 
@@ -15,10 +16,10 @@ bool is_numeric(const std::string_view sv)
             std::find_if(sv.begin(), sv.end(), [](unsigned char c){ return !std::isdigit(c); }) == sv.end());
 }
 
-void parse_cmdline(const int argc, const char** argv, std::string& filename, int& nb_threads, bool& print_boards)
+void parse_cmdline(const int argc, const char** argv, std::filesystem::path& path, int& nb_threads, bool& print_boards)
 {
     // Default values
-    filename = "data/sudoku10k.txt";
+    path = "data/sudoku10k.txt";
     nb_threads = 4;
     print_boards = true;
 
@@ -33,16 +34,16 @@ void parse_cmdline(const int argc, const char** argv, std::string& filename, int
             nb_threads = std::min(std::stoi(argv[2]), (int) std::thread::hardware_concurrency());
         }
     case 2:
-        filename = argv[1];
+        path = argv[1];
     default:
         break;
     }
 }
 
-std::vector<std::string> parse_grids(const std::string& filename)
+std::vector<std::string> parse_grids(const std::filesystem::path& path)
 {
     std::vector<std::string> grids;
-    std::ifstream infile(filename);
+    std::ifstream infile(path);
 
     if (infile.is_open()) {
         std::string grid;
@@ -51,7 +52,7 @@ std::vector<std::string> parse_grids(const std::string& filename)
             grids.push_back(grid);
         }
     } else {
-        std::cerr << "File '" << filename << "' not found." << std::endl;
+        std::cerr << "File '" << path << "' not found." << std::endl;
     }
 
     return grids;
@@ -60,13 +61,13 @@ std::vector<std::string> parse_grids(const std::string& filename)
 
 int main(int argc, const char* argv[])
 {
-    std::string filename;
+    std::filesystem::path path;
     int nb_threads;
     bool print_boards;
     std::mutex cout_mtx;
 
-    parse_cmdline(argc, argv, filename, nb_threads, print_boards);
-    const auto& grids = parse_grids(filename);
+    parse_cmdline(argc, argv, path, nb_threads, print_boards);
+    const auto& grids = parse_grids(path);
     nb_threads = std::min(nb_threads, (int) grids.size());
     print_boards &= (grids.size() <= 10);    // Arbitrary magic number to avoid printing too much games
 
