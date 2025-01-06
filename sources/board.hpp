@@ -1,7 +1,6 @@
 #pragma once
 
 #include <array>
-#include <bitset>
 #include <vector>
 
 #include "bit_manipulation.hpp"
@@ -24,10 +23,10 @@ public:
     inline bool has_collapsed() const { return _superposition & (1 << N); }
     inline bool has_zero_entropy() const { return !(_superposition & INIT_STATE); }
 
-    inline std::bitset<N + 1> get_superposition() const { return std::bitset<N + 1>(_superposition); }
     inline int get_digit() const { return bit::mask.at(_superposition); }
-
     int get_entropy() const;
+
+    inline bool is_possible(const int digit) const { return bit::check(_superposition, digit - 1); }
     const std::vector<int> get_possibilities() const;
 
     inline void fill(const int digit) { _superposition = bit::set(1 << N, digit - 1); }

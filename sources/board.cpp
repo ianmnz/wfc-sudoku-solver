@@ -103,7 +103,7 @@ const std::vector<int> q_tile::get_possibilities() const
     possibilities.reserve(N);
 
     for (int p = 1; p <= N; ++p) {
-        if (bit::check(_superposition, p - 1)) {
+        if (is_possible(p)) {
             possibilities.push_back(p);
         }
     }
@@ -230,8 +230,8 @@ bool q_board::propagate(const int idx, const int digit)
  */
 bool q_board::infer(const std::array<int, N - 1>& arr)
 {
-    // Checks if digit is the only possible candidate for a given
-    // tile in a peer group
+    // Checks if there is only one tile that can
+    // hold a digit, and sets the digit to the tile
     for (int d = 1; d <= N; ++d) {
         int inferred_idx = -1;
         bool is_inferred_idx_uniq = false;
@@ -239,7 +239,7 @@ bool q_board::infer(const std::array<int, N - 1>& arr)
         for (const int idx : arr) {
             const q_tile& tile = _grid[idx];
 
-            if (tile.get_superposition()[d - 1]) {
+            if (tile.is_possible(d)) {
                 if (is_inferred_idx_uniq) {
                     is_inferred_idx_uniq = false;
                     break;
