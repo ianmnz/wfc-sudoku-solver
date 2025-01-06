@@ -13,7 +13,8 @@ message(${CMAKE_THREAD_LIBS_INIT}) # pthread library
 add_executable(sudoku sources/main.cpp)
 
 target_compile_features(sudoku PRIVATE cxx_std_17)
-target_compile_options(sudoku PRIVATE -Og)
+target_compile_options(sudoku PRIVATE -O2)
+target_compile_definitions(sudoku PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 
 target_link_libraries(sudoku PRIVATE Threads::Threads)
 

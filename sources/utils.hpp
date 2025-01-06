@@ -13,11 +13,14 @@
 namespace utils
 {
 
+
+#ifdef DEBUG
+inline std::seed_seq seed{2};
+inline std::mt19937 g(seed);
+#else
 inline std::random_device rd;
 inline std::mt19937 g(rd());
-
-// inline std::seed_seq seed{2};
-// inline std::mt19937 g(seed);
+#endif
 
 int sample(const std::vector<int>& array);
 void shuffle(std::vector<int>& array);
