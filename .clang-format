@@ -1,0 +1,14 @@
+{
+IndentWidth: 4,
+BreakBeforeBraces: Linux,
+PointerAlignment: Left,
+AlignAfterOpenBracket: Align,
+SpaceBeforeParens: ControlStatements,
+SpacesBeforeTrailingComments: 2,
+SpacesInLineCommentPrefix: {
+  Minimum: 1,
+},
+AccessModifierOffset: -4,
+EmptyLineAfterAccessModifier: Never,
+FixNamespaceComments: true,
+}
