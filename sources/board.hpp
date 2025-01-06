@@ -1,8 +1,8 @@
 #pragma once
 
 #include <array>
-#include <vector>
 #include <bitset>
+#include <vector>
 
 #include "bit_manipulation.hpp"
 
@@ -65,4 +65,4 @@ private:
     std::array<q_tile, N * N> _grid;
 };
 
-} // namespace sudoku
+}  // namespace sudoku

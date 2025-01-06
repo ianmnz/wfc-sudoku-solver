@@ -3,6 +3,13 @@
 #include <sstream>
 
 
+/**
+ * @brief Get same column tiles
+ *
+ * @param i row id
+ * @param j column id
+ * @return Array of N-1 column peers
+ */
 std::array<int, N - 1> get_col_peers(const int i, const int j)
 {
     std::array<int, N - 1> columns;
@@ -17,6 +24,13 @@ std::array<int, N - 1> get_col_peers(const int i, const int j)
     return columns;
 }
 
+/**
+ * @brief Get same row tiles
+ *
+ * @param i row id
+ * @param j column id
+ * @return Array of N-1 row peers
+ */
 std::array<int, N - 1> get_row_peers(const int i, const int j)
 {
     std::array<int, N - 1> rows;
@@ -31,12 +45,19 @@ std::array<int, N - 1> get_row_peers(const int i, const int j)
     return rows;
 }
 
+/**
+ * @brief Get same box tiles
+ *
+ * @param i row id
+ * @param j column id
+ * @return Array of N-1 box peers
+ */
 std::array<int, N - 1> get_box_peers(const int i, const int j)
 {
     std::array<int, N - 1> boxes;
 
-    const int rr = i - (i % BOX);   // = (int)(i / BOX) * BOX
-    const int cc = j - (j % BOX);   // = (int)(j / BOX) * BOX
+    const int rr = i - (i % BOX);  // = (int)(i / BOX) * BOX
+    const int cc = j - (j % BOX);  // = (int)(j / BOX) * BOX
 
     int idx = 0;
     for (int dr = 0; dr < BOX; ++dr) {
@@ -58,6 +79,11 @@ std::array<int, N - 1> get_box_peers(const int i, const int j)
 namespace sudoku
 {
 
+/**
+ * @brief Get entropy value
+ *
+ * @return Entropy
+ */
 int q_tile::get_entropy() const
 {
     if (has_zero_entropy())
@@ -66,6 +92,11 @@ int q_tile::get_entropy() const
     return bit::count(_superposition);
 }
 
+/**
+ * @brief All possible candidates to the tile
+ *
+ * @return Array of candidates
+ */
 const std::vector<int> q_tile::get_possibilities() const
 {
     std::vector<int> possibilities;
@@ -80,9 +111,14 @@ const std::vector<int> q_tile::get_possibilities() const
 }
 
 
+/**
+ * @brief Construct a new q board::q board object
+ *
+ * @param grid A N*N string of numbers and blank spaces
+ */
 q_board::q_board(std::string_view grid)
 {
-    static constexpr std::string_view digits {"123456789"};
+    static constexpr std::string_view digits{"123456789"};
 
     for (int idx = 0; idx < N * N; ++idx) {
         const char c_digit = grid[idx];
@@ -95,6 +131,11 @@ q_board::q_board(std::string_view grid)
     }
 }
 
+/**
+ * @brief Output board
+ *
+ * @return The string format of board
+ */
 std::string q_board::show() const
 {
     std::stringstream ss;
@@ -109,17 +150,29 @@ std::string q_board::show() const
     return ss.str();
 }
 
+/**
+ * @brief Sets a tile to a specific value, propagates this informations among
+ * its peers and infers next possible collapse
+ *
+ * @param index The tile index
+ * @param digit The chosen value
+ * @return true if tile was set to value,
+ * @return false otherwise
+ */
 bool q_board::collapse(const int index, const int digit)
 {
     const auto& [i, j] = array2grid(index);
     q_tile& tile = _grid[index];
 
     if (tile.has_collapsed()) {
+        // Asserts that collapsed tile has the correct value
         return (tile.get_digit() == digit);
     }
 
+    // Sets tile value
     tile.fill(digit);
 
+    // Propagates collapse information
     if (!propagate_col(i, j, digit)
         || !propagate_row(i, j, digit)
         || !propagate_box(i, j, digit))
@@ -127,6 +180,7 @@ bool q_board::collapse(const int index, const int digit)
         return false;
     }
 
+    // Infers subsequent collapses
     if (!infer_col(i, j)
         || !infer_row(i, j)
         || !infer_box(i, j))
@@ -137,13 +191,25 @@ bool q_board::collapse(const int index, const int digit)
     return true;
 }
 
+/**
+ * @brief Recursively propagates collapse information by removing value as
+ * possibility
+ *
+ * @param idx Index of peer tile tha receives information
+ * @param digit Value to which original tile was set
+ * @return true if information was properly propagated,
+ * @return false otherwise
+ */
 bool q_board::propagate(const int idx, const int digit)
 {
     q_tile& tile = _grid[idx];
+
+    // Removes value as possibility
     tile.eliminate(digit);
 
-    // Check if should abort collapsing
     if (tile.has_zero_entropy()) {
+        // Found inconsistency
+        // Abort collapsing
         return false;
     }
 
@@ -154,8 +220,18 @@ bool q_board::propagate(const int idx, const int digit)
     return true;
 }
 
+/**
+ * @brief Recursively infers if original collapse forced another collapse to a
+ * peer group
+ *
+ * @param arr Peer group of original tile
+ * @return false if inference results in inconsistency,
+ * @return true otherwise
+ */
 bool q_board::infer(const std::array<int, N - 1>& arr)
 {
+    // Checks if digit is the only possible candidate for a given
+    // tile in a peer group
     for (int d = 1; d <= N; ++d) {
         int inferred_idx = -1;
         bool is_inferred_idx_uniq = false;
@@ -183,6 +259,7 @@ bool q_board::infer(const std::array<int, N - 1>& arr)
             continue;
         }
 
+        // Checks if inference creates inconsistency
         if (!collapse(inferred_idx, d)) {
             return false;
         }
@@ -236,4 +313,4 @@ bool q_board::infer_box(const int i, const int j)
     return infer(get_box_peers(i, j));
 }
 
-} // namespace sudoku
+}  // namespace sudoku

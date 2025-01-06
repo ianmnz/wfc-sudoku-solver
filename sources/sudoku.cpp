@@ -1,10 +1,10 @@
 #include "sudoku.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <optional>
 #include <stack>
 #include <string>
-#include <algorithm>
 
 #include "utils.hpp"
 
@@ -12,7 +12,15 @@
 namespace sudoku
 {
 
-void print_side_by_side(std::string_view init_grid, std::string_view solved_grid, std::mutex& mtx)
+/**
+ * @brief Thread safe printing of initial and solved grids
+ *
+ * @param init_grid
+ * @param solved_grid
+ * @param mtx Mutex to avoid data racing
+ */
+void print_side_by_side(std::string_view init_grid,
+                        std::string_view solved_grid, std::mutex& mtx)
 {
     // To avoid data racing when printing the results
     std::lock_guard<std::mutex> lock(mtx);
@@ -27,14 +35,18 @@ void print_side_by_side(std::string_view init_grid, std::string_view solved_grid
             std::cout << row_separator << "\t" << row_separator << "\n";
         }
 
+        // Print initial grid row
         for (int j = 0; j < N; ++j) {
-            std::cout << (j == 3 || j == 6 ? '|' : ' ') << init_grid[grid2array(i, j)];
+            std::cout << (j == 3 || j == 6 ? '|' : ' ')
+                      << init_grid[grid2array(i, j)];
         }
 
         std::cout << "\t";
 
+        // Print solved grid row
         for (int j = 0; j < N; ++j) {
-            std::cout << (j == 3 || j == 6 ? '|' : ' ') << solved_grid[grid2array(i, j)];
+            std::cout << (j == 3 || j == 6 ? '|' : ' ')
+                      << solved_grid[grid2array(i, j)];
         }
 
         std::cout << "\n";
@@ -43,6 +55,12 @@ void print_side_by_side(std::string_view init_grid, std::string_view solved_grid
     std::cout << std::endl;
 }
 
+/**
+ * @brief Get the tiles with minimal entropy
+ *
+ * @param board Current board reference
+ * @return std::optional vector of tiles
+ */
 std::optional<std::vector<int>> get_candidates(const q_board& board)
 {
     int min_entropy = 2 * N;
@@ -60,6 +78,8 @@ std::optional<std::vector<int>> get_candidates(const q_board& board)
         const int entropy = tile.get_entropy();
 
         if (!entropy) {
+            // No solution possible
+            // due to a conflict of collapsed tiles
             return std::nullopt;
         }
 
@@ -74,19 +94,24 @@ std::optional<std::vector<int>> get_candidates(const q_board& board)
         candidates.push_back(index);
     }
 
+    // Returns an empty vector
+    // if all tiles have collapsed
+    // i.e., if is a solution
+    candidates.shrink_to_fit();
     return candidates;
 }
 
-bool is_solution(const q_board& board)
-{
-    return std::all_of(board.get_grid().cbegin(), board.get_grid().cend(),
-        [](const q_tile& t){ return t.has_collapsed(); });
-}
-
-bool solve(q_board &board)
+/**
+ * @brief A DFS Sudoku Solver (with backtracking)
+ *
+ * @param board Sudoku board reference that will be filled with the solution
+ * @return true if solved,
+ * @return false if not
+ */
+bool solve(q_board& board)
 {
     std::stack<q_board> stk;
-    stk.push(board);
+    stk.push(board); // Pushes a copy of board to the top of the stack
 
     while (!stk.empty()) {
         q_board curr = stk.top();
@@ -95,29 +120,38 @@ bool solve(q_board &board)
         const auto opt_candidates = get_candidates(curr);
 
         if (!opt_candidates.has_value()) {
+            // Found a state with no possible solution
+            // Backtracks to previous state
             continue;
         }
 
         const std::vector<int>& candidates = opt_candidates.value();
 
         if (candidates.empty()) {
+            // Found a solution
+            // Updates the board and returns
             board = curr;
             return true;
         }
 
-        const int chosen_idx = utils::sample(candidates)[0];
+        // Chooses randomly a tile among the candidates to collapse
+        const int chosen_idx = utils::sample(candidates);
         std::vector<int> possibilities = curr.get_tile(chosen_idx).get_possibilities();
 
-        utils::shuffle(possibilities);   // Won't be needed when parallelized
-        for (int chosen_val : possibilities) {
-            stk.emplace(curr);  // Creates a copy directly at the top of the stack
+        // Not actually necessary but prevents always trying the same
+        // order of possibilities over and over again
+        utils::shuffle(possibilities);
 
+        for (int chosen_val : possibilities) {
+            // Since 'curr' is a reference,
+            // creates a copy directly on the top of the stack
+            // (avoiding unnecessary copies when pushing)
+            stk.emplace(curr);
+
+            // Checks if tile can be collapsed to chosen value
+            // If not, pop state from stack
             if (!stk.top().collapse(chosen_idx, chosen_val)) {
                 stk.pop();
-
-            } else if (is_solution(stk.top())) {
-                board = stk.top();
-                return true;
             }
         }
     }
@@ -125,4 +159,4 @@ bool solve(q_board &board)
     return false;
 }
 
-} // namespace sudoku
+}  // namespace sudoku

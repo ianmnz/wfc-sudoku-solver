@@ -1,13 +1,13 @@
 #pragma once
 
-#include <random>
-#include <vector>
 #include <algorithm>
-#include <thread>
-#include <queue>
 #include <condition_variable>
-#include <mutex>
 #include <functional>
+#include <mutex>
+#include <queue>
+#include <random>
+#include <thread>
+#include <vector>
 
 
 namespace utils
@@ -19,10 +19,10 @@ inline std::mt19937 g(rd());
 // inline std::seed_seq seed{2};
 // inline std::mt19937 g(seed);
 
-std::vector<int> sample(const std::vector<int>& array, const int nb_elem = 1);
+int sample(const std::vector<int>& array);
 void shuffle(std::vector<int>& array);
 
-using Task = std::function<void ()>;
+using Task = std::function<void()>;
 
 class thread_pool
 {
@@ -40,4 +40,4 @@ private:
     bool _stop_pool = false;
 };
 
-} // namespace utils
+}  // namespace utils

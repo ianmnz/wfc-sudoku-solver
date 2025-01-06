@@ -4,16 +4,24 @@
 namespace utils
 {
 
-std::vector<int> sample(const std::vector<int>& array, const int nb_elem)
+/**
+ * @brief Sample one element of array
+ *
+ * @param array Array of values
+ * @return Chosen value
+ */
+int sample(const std::vector<int>& array)
 {
     std::vector<int> chosen;
-    chosen.reserve(nb_elem);
-
-    std::sample(array.cbegin(), array.cend(), std::back_inserter(chosen), nb_elem, g);
-
-    return chosen;
+    std::sample(array.cbegin(), array.cend(), std::back_inserter(chosen), 1, g);
+    return chosen[0];
 }
 
+/**
+ * @brief Shuffle array
+ *
+ * @param array Reference to an array
+ */
 void shuffle(std::vector<int>& array)
 {
     std::shuffle(array.begin(), array.end(), g);
@@ -25,7 +33,7 @@ thread_pool::thread_pool(const int nb_threads)
     _threads.reserve(nb_threads);
 
     for (int i = 0; i < nb_threads; ++i) {
-        _threads.emplace_back([this]{
+        _threads.emplace_back([this] {
             while (true) {
                 Task task;
                 {
@@ -57,7 +65,7 @@ thread_pool::~thread_pool()
 
     _cv.notify_all();
 
-    for(auto& th: _threads) {
+    for (auto& th : _threads) {
         th.join();
     }
 }
@@ -71,4 +79,4 @@ void thread_pool::enqueue(Task task)
     _cv.notify_one();
 }
 
-}   // namespace utils
+}  // namespace utils
