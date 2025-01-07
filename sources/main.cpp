@@ -97,22 +97,26 @@ std::vector<std::string> run(const std::vector<std::string>& grids,
     int unsolved = 0;
     std::vector<std::string> solutions(grids.size(), "");
 
-    utils::thread_pool pool(nb_threads);
+    {
+        // start concurrency
+        utils::thread_pool pool(nb_threads);
 
-    for (int i = 0; i < grids.size(); ++i) {
-        const auto& grid = grids[i];
+        for (int i = 0; i < grids.size(); ++i) {
+            const auto& grid = grids[i];
 
-        pool.enqueue([i, grid, &mtx, &unsolved, &solutions] {
-            sudoku::q_board board(grid);
+            pool.enqueue([i, grid, &mtx, &unsolved, &solutions] {
+                sudoku::q_board board(grid);
 
-            if (sudoku::solve(board)) {
-                solutions[i] = board.serialize();
+                if (sudoku::solve(board)) {
+                    solutions[i] = board.serialize();
 
-            } else {
-                std::lock_guard<std::mutex> lock(mtx);
-                unsolved++;
-            }
-        });
+                } else {
+                    std::lock_guard<std::mutex> lock(mtx);
+                    unsolved++;
+                }
+            });
+        }
+        // joins all threads on destruction
     }
 
     if (unsolved)
