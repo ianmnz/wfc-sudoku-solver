@@ -73,8 +73,8 @@ std::vector<std::string> parse(const int argc, const char** argv, arguments& arg
         exit(1);
     }
 
-    // Guards against too many cores to use or too many boards to print
-    args.nb_threads = std::min({args.nb_threads, (int)std::thread::hardware_concurrency(), (int)grids.size()});
+    // Guards against too many/few cores to use or too many boards to print
+    args.nb_threads = std::clamp(args.nb_threads, 1, std::min((int)std::thread::hardware_concurrency(), (int)grids.size()));
     args.should_show_boards &= (grids.size() <= args.max_nb_boards_display);
 
     return grids;
