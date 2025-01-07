@@ -47,6 +47,8 @@ public:
     inline const std::array<q_tile, N * N>& get_grid() const { return _grid; }
     inline const q_tile& get_tile(const int index) const { return _grid[index]; }
 
+    static void precompute_peers(const int i, const int j);
+
     std::string show() const;
     bool collapse(const int idx, const int digit);
 

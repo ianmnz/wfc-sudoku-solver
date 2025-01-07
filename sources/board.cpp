@@ -1,10 +1,11 @@
 #include "board.hpp"
 
+#include <unordered_map>
 #include <sstream>
 
 
 /**
- * @brief Get same column tiles
+ * @brief Get same column tiles (and cache the result)
  *
  * @param i row id
  * @param j column id
@@ -12,6 +13,13 @@
  */
 std::array<int, N - 1> get_col_peers(const int i, const int j)
 {
+    static std::unordered_map<int, std::array<int, N - 1>> cache;
+
+    const int key = grid2array(i, j);
+    if (auto found = cache.find(key); found != cache.end()) {
+        return found->second;
+    }
+
     std::array<int, N - 1> columns;
 
     int idx = 0;
@@ -21,11 +29,11 @@ std::array<int, N - 1> get_col_peers(const int i, const int j)
         }
         columns[idx++] = grid2array(r, j);
     }
-    return columns;
+    return cache[key] = columns;
 }
 
 /**
- * @brief Get same row tiles
+ * @brief Get same row tiles (and cache the result)
  *
  * @param i row id
  * @param j column id
@@ -33,6 +41,13 @@ std::array<int, N - 1> get_col_peers(const int i, const int j)
  */
 std::array<int, N - 1> get_row_peers(const int i, const int j)
 {
+    static std::unordered_map<int, std::array<int, N - 1>> cache;
+
+    const int key = grid2array(i, j);
+    if (auto found = cache.find(key); found != cache.end()) {
+        return found->second;
+    }
+
     std::array<int, N - 1> rows;
 
     int idx = 0;
@@ -42,11 +57,11 @@ std::array<int, N - 1> get_row_peers(const int i, const int j)
         }
         rows[idx++] = grid2array(i, c);
     }
-    return rows;
+    return cache[key] = rows;
 }
 
 /**
- * @brief Get same box tiles
+ * @brief Get same box tiles (and cache the result)
  *
  * @param i row id
  * @param j column id
@@ -54,6 +69,13 @@ std::array<int, N - 1> get_row_peers(const int i, const int j)
  */
 std::array<int, N - 1> get_box_peers(const int i, const int j)
 {
+    static std::unordered_map<int, std::array<int, N - 1>> cache;
+
+    const int key = grid2array(i, j);
+    if (auto found = cache.find(key); found != cache.end()) {
+        return found->second;
+    }
+
     std::array<int, N - 1> boxes;
 
     const int rr = i - (i % BOX);  // = (int)(i / BOX) * BOX
@@ -72,7 +94,7 @@ std::array<int, N - 1> get_box_peers(const int i, const int j)
             boxes[idx++] = grid2array(r, c);
         }
     }
-    return boxes;
+    return cache[key] = boxes;
 }
 
 
@@ -129,6 +151,19 @@ q_board::q_board(std::string_view grid)
             collapse(idx, i_digit);
         }
     }
+}
+
+/**
+ * @brief Pre-computes col, row and box peers of a tile
+ *
+ * @param i row id
+ * @param j col id
+ */
+void q_board::precompute_peers(const int i, const int j)
+{
+    get_col_peers(i, j);
+    get_row_peers(i, j);
+    get_box_peers(i, j);
 }
 
 /**

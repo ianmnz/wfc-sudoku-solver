@@ -81,7 +81,7 @@ std::vector<std::string> parse(const int argc, const char** argv, arguments& arg
 }
 
 /**
- * @brief Solve sudoku boards
+ * @brief Solve sudoku boards concurrently on a thread pool
  *
  * @param grids Array of grids to solve
  * @param nb_threads Nb of threads to use
@@ -90,6 +90,8 @@ std::vector<std::string> parse(const int argc, const char** argv, arguments& arg
  */
 int run(const std::vector<std::string>& grids, const int nb_threads, const bool should_show_boards)
 {
+    sudoku::init();
+
     std::mutex mtx;
     int unsolved = 0;
     utils::thread_pool pool(nb_threads);

@@ -56,6 +56,20 @@ void print_side_by_side(std::string_view init_grid,
 }
 
 /**
+ * @brief Initialises sudoku solver by pre-computing peers
+ *
+ */
+void init()
+{
+    for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < N; ++j) {
+            q_board::precompute_peers(i, j);
+        }
+    }
+}
+
+
+/**
  * @brief Get the tiles with minimal entropy
  *
  * @param board Current board reference
