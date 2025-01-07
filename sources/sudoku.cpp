@@ -13,49 +13,6 @@ namespace sudoku
 {
 
 /**
- * @brief Thread safe printing of initial and solved grids
- *
- * @param init_grid
- * @param solved_grid
- * @param mtx Mutex to avoid data racing
- */
-void print_side_by_side(std::string_view init_grid,
-                        std::string_view solved_grid, std::mutex& mtx)
-{
-    // To avoid data racing when printing the results
-    std::lock_guard<std::mutex> lock(mtx);
-
-    static constexpr std::string_view row_separator = " -----+-----+-----";
-
-    std::cout << "\n";
-
-    for (int i = 0; i < N; ++i) {
-
-        if (i == 3 || i == 6) {
-            std::cout << row_separator << "\t" << row_separator << "\n";
-        }
-
-        // Print initial grid row
-        for (int j = 0; j < N; ++j) {
-            std::cout << (j == 3 || j == 6 ? '|' : ' ')
-                      << init_grid[grid2array(i, j)];
-        }
-
-        std::cout << "\t";
-
-        // Print solved grid row
-        for (int j = 0; j < N; ++j) {
-            std::cout << (j == 3 || j == 6 ? '|' : ' ')
-                      << solved_grid[grid2array(i, j)];
-        }
-
-        std::cout << "\n";
-    }
-
-    std::cout << std::endl;
-}
-
-/**
  * @brief Initialises sudoku solver by pre-computing peers
  *
  */
@@ -67,7 +24,6 @@ void init()
         }
     }
 }
-
 
 /**
  * @brief Get the tiles with minimal entropy

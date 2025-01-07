@@ -171,7 +171,7 @@ void q_board::precompute_peers(const int i, const int j)
  *
  * @return The string format of board
  */
-std::string q_board::show() const
+std::string q_board::serialize() const
 {
     std::stringstream ss;
     for (const auto tile : _grid) {

@@ -49,7 +49,7 @@ public:
 
     static void precompute_peers(const int i, const int j);
 
-    std::string show() const;
+    std::string serialize() const;
     bool collapse(const int idx, const int digit);
 
 private:

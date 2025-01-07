@@ -14,8 +14,7 @@ struct arguments {
     std::filesystem::path path{
         "data/sudoku10k.txt"};      // Path to file with sudoku puzzles
     int nb_threads{4};              // Chosen number of threads
-    bool should_show_boards{true};  // Display boards flag
-    int max_nb_boards_display{10};  // Display threshold to avoid printing too many boards
+    bool output_solutions{true};    // Write solutions to file flag
 };
 
 
@@ -40,7 +39,7 @@ std::vector<std::string> parse(const int argc, const char** argv, arguments& arg
     switch (argc) {
     case 4:
         if (std::string(argv[3]) == "0") {
-            args.should_show_boards = false;
+            args.output_solutions = false;
         }
         [[fallthrough]];
 
@@ -74,8 +73,10 @@ std::vector<std::string> parse(const int argc, const char** argv, arguments& arg
     }
 
     // Guards against too many/few cores to use or too many boards to print
-    args.nb_threads = std::clamp(args.nb_threads, 1, std::min((int)std::thread::hardware_concurrency(), (int)grids.size()));
-    args.should_show_boards &= (grids.size() <= args.max_nb_boards_display);
+    args.nb_threads = std::clamp(
+        args.nb_threads,
+        1,
+        std::min((int)std::thread::hardware_concurrency(), (int)grids.size()));
 
     return grids;
 }
@@ -85,34 +86,91 @@ std::vector<std::string> parse(const int argc, const char** argv, arguments& arg
  *
  * @param grids Array of grids to solve
  * @param nb_threads Nb of threads to use
- * @param should_show_boards Flag for printing solutions
- * @return Nb of unsolved boards
+ * @return Array of solved boards
  */
-int run(const std::vector<std::string>& grids, const int nb_threads, const bool should_show_boards)
+std::vector<std::string> run(const std::vector<std::string>& grids,
+                             const int nb_threads)
 {
     sudoku::init();
 
     std::mutex mtx;
     int unsolved = 0;
+    std::vector<std::string> solutions(grids.size(), "");
+
     utils::thread_pool pool(nb_threads);
 
-    for (const auto& grid : grids) {
-        pool.enqueue([grid, should_show_boards, &mtx, &unsolved] {
-            sudoku::q_board game(grid);
-            if (sudoku::solve(game)) {
-                if (should_show_boards) {
-                    sudoku::print_side_by_side(grid, game.show(), mtx);
-                }
+    for (int i = 0; i < grids.size(); ++i) {
+        const auto& grid = grids[i];
+
+        pool.enqueue([i, grid, &mtx, &unsolved, &solutions] {
+            sudoku::q_board board(grid);
+
+            if (sudoku::solve(board)) {
+                solutions[i] = board.serialize();
+
             } else {
                 std::lock_guard<std::mutex> lock(mtx);
-                std::cout << "No solution found for " << grid << std::endl;
                 unsolved++;
             }
         });
     }
 
-    return unsolved;
+    if (unsolved)
+        std::cout << "Puzzles not solved: " << unsolved;
+    else
+        std::cout << "Solved all puzzles";
+
+    return solutions;
 }
+
+/**
+ * @brief Outputs solutions to file
+ *
+ * @param grids Original array of grids
+ * @param solutions Array of found solutions for each grid
+ */
+void output(const std::vector<std::string>& grids,
+            const std::vector<std::string>& solutions)
+{
+    std::ofstream file;
+    file.open("solutions.txt");
+
+    constexpr std::string_view row_sep = " -----+-----+-----";
+
+    for (int i = 0; i < grids.size(); ++i) {
+        const std::string& grid = grids[i];
+        const std::string& solution = solutions[i];
+
+        if (solution.empty()) {
+            file << "No solution found for Sudoku board " << i << ": " << grid << "\n";
+            continue;
+        }
+
+        for (int row = 0; row < N; ++row) {
+
+            if (row == 3 || row == 6) {
+                file << row_sep << "\t" << row_sep << "\n";
+            }
+
+            for (int col = 0; col < N; ++col) {
+                file << (col == 3 || col == 6 ? '|' : ' ') << grid[grid2array(row, col)];
+            }
+
+            file << "\t";
+
+            for (int col = 0; col < N; ++col) {
+                file << (col == 3 || col == 6 ? '|' : ' ') << solution[grid2array(row, col)];
+            }
+
+            file << "\n";
+        }
+
+        file << "\n";
+    }
+
+    file.close();
+}
+
 
 int main(int argc, const char* argv[])
 {
@@ -124,18 +182,19 @@ int main(int argc, const char* argv[])
               << args.nb_threads << " threads\n";
 
     std::chrono::high_resolution_clock::time_point begin =
-        std::chrono::high_resolution_clock::now(); // Start chrono
+        std::chrono::high_resolution_clock::now();  // Start chrono
 
-    const int unsolved = run(grids, args.nb_threads, args.should_show_boards);
+    const auto& solutions = run(grids, args.nb_threads);
 
     std::chrono::high_resolution_clock::time_point end =
-        std::chrono::high_resolution_clock::now(); // End chrono
-
-    if (unsolved) std::cout << "Puzzles unsolved: " << unsolved;
-    else std::cout << "Solved all puzzles";
+        std::chrono::high_resolution_clock::now();  // End chrono
 
     std::cout << "\nRun took "
               << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() * 1.e-6 << "s\n";
+
+    if (args.output_solutions) {
+        output(grids, solutions);
+    }
 
     return 0;
 }
