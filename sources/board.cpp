@@ -108,7 +108,7 @@ namespace sudoku
  */
 int q_tile::get_entropy() const
 {
-    if (has_zero_entropy())
+    if (!(_superposition & INIT_STATE))
         return 0;
 
     return bit::count(_superposition);
@@ -242,14 +242,17 @@ bool q_board::propagate(const int idx, const int digit)
     // Removes value as possibility
     tile.eliminate(digit);
 
-    if (tile.has_zero_entropy()) {
+    const int entropy = tile.get_entropy();
+
+    if (!entropy) {
         // Found inconsistency
         // Abort collapsing
         return false;
     }
 
     // Collapse cascade
-    if (tile.get_entropy() == 1) {
+    // Tile not set but only has one option
+    if (entropy == 1) {
         return collapse(idx, tile.get_digit());
     }
     return true;

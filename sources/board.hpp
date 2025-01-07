@@ -7,7 +7,7 @@
 
 #define N 9
 #define BOX 3
-#define INIT_STATE 0b01'1111'1111
+#define INIT_STATE ((int16_t)0b01'1111'1111)
 
 
 inline std::array<int, 2> array2grid(const int index) { return {(index / N), (index % N)}; }
@@ -20,8 +20,7 @@ namespace sudoku
 class q_tile final
 {
 public:
-    inline bool has_collapsed() const { return _superposition & (1 << N); }
-    inline bool has_zero_entropy() const { return !(_superposition & INIT_STATE); }
+    inline bool has_collapsed() const { return bit::check(_superposition, N); }
 
     inline int get_digit() const { return bit::mask.at(_superposition); }
     int get_entropy() const;
@@ -31,7 +30,6 @@ public:
 
     inline void fill(const int digit) { _superposition = bit::set(1 << N, digit - 1); }
     inline void eliminate(const int digit) { _superposition = bit::clear(_superposition, digit - 1); }
-    inline void clear() { _superposition = INIT_STATE; }
 
 private:
     int16_t _superposition = INIT_STATE;
