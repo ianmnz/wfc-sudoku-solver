@@ -140,12 +140,10 @@ const std::vector<int> q_tile::get_possibilities() const
  */
 q_board::q_board(std::string_view grid)
 {
-    static constexpr std::string_view digits{"123456789"};
-
     for (int idx = 0; idx < N * N; ++idx) {
         const char c_digit = grid[idx];
 
-        if (digits.find(c_digit) != std::string::npos) {
+        if (c_digit != '.') {
             const int i_digit = c_digit - '0';
 
             collapse(idx, i_digit);

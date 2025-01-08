@@ -1,10 +1,7 @@
 #include "sudoku.hpp"
 
-#include <algorithm>
-#include <iostream>
 #include <optional>
 #include <stack>
-#include <string>
 
 #include "utils.hpp"
 
