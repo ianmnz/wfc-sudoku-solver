@@ -13,9 +13,9 @@
 
 struct arguments {
     std::filesystem::path path{
-        "data/sudoku10k.txt"};      // Path to file with sudoku puzzles
-    int nb_threads{4};              // Chosen number of threads
-    bool output_solutions{true};    // Write solutions to file flag
+        "data/benchmark10k.txt"};  // Path to file with sudoku puzzles
+    int nb_threads{4};             // Chosen number of threads
+    bool output_solutions{false};  // Write solutions to file flag
 };
 
 
