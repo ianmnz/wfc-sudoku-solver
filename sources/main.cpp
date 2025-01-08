@@ -1,3 +1,4 @@
+#include <atomic>
 #include <chrono>
 #include <ctype.h>
 #include <filesystem>
@@ -93,8 +94,7 @@ std::vector<std::string> run(const std::vector<std::string>& grids,
 {
     sudoku::init();
 
-    std::mutex mtx;
-    int unsolved = 0;
+    std::atomic_uint unsolved = 0;
     std::vector<std::string> solutions(grids.size(), "");
 
     {
@@ -104,14 +104,13 @@ std::vector<std::string> run(const std::vector<std::string>& grids,
         for (int i = 0; i < grids.size(); ++i) {
             const auto& grid = grids[i];
 
-            pool.enqueue([i, grid, &mtx, &unsolved, &solutions] {
+            pool.enqueue([i, grid, &unsolved, &solutions] {
                 sudoku::q_board board(grid);
 
                 if (sudoku::solve(board)) {
                     solutions[i] = board.serialize();
 
                 } else {
-                    std::lock_guard<std::mutex> lock(mtx);
                     unsolved++;
                 }
             });
