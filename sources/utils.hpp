@@ -9,10 +9,14 @@
 #include <thread>
 #include <vector>
 
+#define N 9
+#define BOX 3
 
 namespace utils
 {
 
+inline std::array<int, 2> array2grid(const int index) { return {(index / N), (index % N)}; }
+inline int grid2array(const int i, const int j) { return i * N + j; }
 
 #ifdef DEBUG
 inline std::seed_seq seed{2};

@@ -4,18 +4,13 @@
 #include <vector>
 
 #include "bit_manipulation.hpp"
-
-#define N 9
-#define BOX 3
-#define INIT_STATE ((int16_t)0b01'1111'1111)
-
-
-inline std::array<int, 2> array2grid(const int index) { return {(index / N), (index % N)}; }
-inline int grid2array(const int i, const int j) { return i * N + j; }
+#include "utils.hpp"
 
 
 namespace sudoku
 {
+
+inline constexpr int16_t init_state = 0b01'1111'1111;
 
 class q_tile final
 {
@@ -32,7 +27,7 @@ public:
     inline void eliminate(const int digit) { _superposition = bit::clear(_superposition, digit - 1); }
 
 private:
-    int16_t _superposition = INIT_STATE;
+    int16_t _superposition = init_state;
 };
 
 

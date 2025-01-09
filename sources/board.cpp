@@ -15,7 +15,7 @@ std::array<int, N - 1> get_col_peers(const int i, const int j)
 {
     static std::unordered_map<int, std::array<int, N - 1>> cache;
 
-    const int key = grid2array(i, j);
+    const int key = utils::grid2array(i, j);
     if (auto found = cache.find(key); found != cache.end()) {
         return found->second;
     }
@@ -27,7 +27,7 @@ std::array<int, N - 1> get_col_peers(const int i, const int j)
         if (r == i) {
             continue;
         }
-        columns[idx++] = grid2array(r, j);
+        columns[idx++] = utils::grid2array(r, j);
     }
     return cache[key] = columns;
 }
@@ -43,7 +43,7 @@ std::array<int, N - 1> get_row_peers(const int i, const int j)
 {
     static std::unordered_map<int, std::array<int, N - 1>> cache;
 
-    const int key = grid2array(i, j);
+    const int key = utils::grid2array(i, j);
     if (auto found = cache.find(key); found != cache.end()) {
         return found->second;
     }
@@ -55,7 +55,7 @@ std::array<int, N - 1> get_row_peers(const int i, const int j)
         if (c == j) {
             continue;
         }
-        rows[idx++] = grid2array(i, c);
+        rows[idx++] = utils::grid2array(i, c);
     }
     return cache[key] = rows;
 }
@@ -71,7 +71,7 @@ std::array<int, N - 1> get_box_peers(const int i, const int j)
 {
     static std::unordered_map<int, std::array<int, N - 1>> cache;
 
-    const int key = grid2array(i, j);
+    const int key = utils::grid2array(i, j);
     if (auto found = cache.find(key); found != cache.end()) {
         return found->second;
     }
@@ -91,7 +91,7 @@ std::array<int, N - 1> get_box_peers(const int i, const int j)
             if (r == i && c == j) {
                 continue;
             }
-            boxes[idx++] = grid2array(r, c);
+            boxes[idx++] = utils::grid2array(r, c);
         }
     }
     return cache[key] = boxes;
@@ -108,7 +108,7 @@ namespace sudoku
  */
 int q_tile::get_entropy() const
 {
-    if (!(_superposition & INIT_STATE))
+    if (!(_superposition & init_state))
         return 0;
 
     return bit::count(_superposition);
@@ -194,7 +194,7 @@ std::string q_board::serialize() const
  */
 bool q_board::collapse(const int index, const int digit)
 {
-    const auto& [i, j] = array2grid(index);
+    const auto& [i, j] = utils::array2grid(index);
     q_tile& tile = _grid[index];
 
     if (tile.has_collapsed()) {

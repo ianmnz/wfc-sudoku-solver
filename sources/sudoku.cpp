@@ -13,7 +13,7 @@ namespace sudoku
  * @brief Initialises sudoku solver by pre-computing peers
  *
  */
-void init()
+void wfc::init()
 {
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
@@ -75,7 +75,7 @@ std::optional<std::vector<int>> get_candidates(const q_board& board)
  * @return true if solved,
  * @return false if not
  */
-bool solve(q_board& board)
+bool wfc::solve(q_board& board)
 {
     std::stack<q_board> stk;
     stk.push(board); // Pushes a copy of board to the top of the stack

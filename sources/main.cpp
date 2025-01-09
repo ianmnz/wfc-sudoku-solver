@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "optim.hpp"
 #include "sudoku.hpp"
 #include "utils.hpp"
 
@@ -27,7 +28,9 @@ struct arguments {
  * @param args Reference to arguments object
  * @return Array of grids
  */
-std::vector<std::string> parse(const int argc, const char** argv, arguments& args)
+std::vector<std::string> parse(const int argc,
+                               const char** argv,
+                               arguments& args)
 {
     // Checks if string is a number
     auto is_numeric = [](std::string_view sv) {
@@ -39,8 +42,8 @@ std::vector<std::string> parse(const int argc, const char** argv, arguments& arg
 
     switch (argc) {
     case 4:
-        if (std::string(argv[3]) == "0") {
-            args.output_solutions = false;
+        if (std::string(argv[3]) == "1") {
+            args.output_solutions = true;
         }
         [[fallthrough]];
 
@@ -92,7 +95,7 @@ std::vector<std::string> parse(const int argc, const char** argv, arguments& arg
 std::vector<std::string> run(const std::vector<std::string>& grids,
                              const int nb_threads)
 {
-    sudoku::init();
+    sudoku::wfc::init();
 
     std::atomic_uint unsolved = 0;
     std::vector<std::string> solutions(grids.size(), "");
@@ -104,10 +107,18 @@ std::vector<std::string> run(const std::vector<std::string>& grids,
         for (int i = 0; i < grids.size(); ++i) {
             const auto& grid = grids[i];
 
-            pool.enqueue([i, grid, &unsolved, &solutions] {
+            pool.enqueue([i, &grid, &unsolved, &solutions] {
+                /*
+                  If one were to use the optimization methods
+                  instead of the WFC, this is how one could do it:
+                  std::string board = grid;
+                  if (sudoku::cp::solve(board)) solutions[i] = board;
+                  if (sudoku::lp::solve(board)) solutions[i] = board;
+                */
+
                 sudoku::q_board board(grid);
 
-                if (sudoku::solve(board)) {
+                if (sudoku::wfc::solve(board)) {
                     solutions[i] = board.serialize();
 
                 } else {
@@ -145,7 +156,8 @@ void output(const std::vector<std::string>& grids,
         const std::string& solution = solutions[i];
 
         if (solution.empty()) {
-            file << "No solution found for Sudoku board " << i << ": " << grid << "\n";
+            file << "No solution found for Sudoku board " << i << ": " << grid
+                 << "\n";
             continue;
         }
 
@@ -156,13 +168,15 @@ void output(const std::vector<std::string>& grids,
             }
 
             for (int col = 0; col < N; ++col) {
-                file << (col == 3 || col == 6 ? '|' : ' ') << grid[grid2array(row, col)];
+                file << (col == 3 || col == 6 ? '|' : ' ')
+                     << grid[utils::grid2array(row, col)];
             }
 
             file << "\t";
 
             for (int col = 0; col < N; ++col) {
-                file << (col == 3 || col == 6 ? '|' : ' ') << solution[grid2array(row, col)];
+                file << (col == 3 || col == 6 ? '|' : ' ')
+                     << solution[utils::grid2array(row, col)];
             }
 
             file << "\n";
